@@ -48,31 +48,41 @@ const Cart = () => {
       expirationYear: ''
     },
     validationSchema: Yup.object({
-      receiver: Yup.string().required('O campo é obrigatório'),
+      receiver: Yup.string()
+        .matches(/^[A-Za-zÀ-ÿ\s]+$/, 'Somente letras são permitidas')
+        .required('O campo é obrigatório'),
+
       description: Yup.string().required('O campo é obrigatório'),
       city: Yup.string().required('O campo é obrigatório'),
-      zipCode: Yup.string()
-        .min(9, 'O campo precisa ter 9 caracteres')
-        .max(9, 'O campo precisa ter 9 caracteres')
-        .required('O campo é obrigatório'),
-      number: Yup.string().required('O campo é obrigatório'),
 
-      nameInCart: Yup.string().required('O campo é obrigatório'),
+      zipCode: Yup.string()
+        .matches(/^\d{5}-\d{3}$/, 'CEP inválido')
+        .required('O campo é obrigatório'),
+
+      number: Yup.string()
+        .matches(/^[0-9]+$/, 'Somente números são permitidos')
+        .required('O campo é obrigatório'),
+
+      complement: Yup.string(),
+
+      nameInCart: Yup.string()
+        .matches(/^[A-Za-zÀ-ÿ\s]+$/, 'Somente letras são permitidas')
+        .required('O campo é obrigatório'),
+
       numberInCart: Yup.string()
-        .required('O campo é obrigatório')
-        .min(19, 'O campo precisa ter três numeros')
-        .max(19, 'O campo precisa ter três numeros'),
+        .matches(/^\d{4} \d{4} \d{4} \d{4}$/, 'Número do cartão incompleto')
+        .required('O campo é obrigatório'),
+
       cardCode: Yup.string()
-        .min(3, 'O campo precisa ter três numeros')
-        .max(3, 'O campo precisa ter três numeros')
+        .matches(/^\d{3}$/, 'CVV deve ter 3 dígitos')
         .required('O campo é obrigatório'),
+
       expirationMonth: Yup.string()
-        .min(2, 'O campo precisa ter dois numeros')
-        .max(2, 'O campo precisa ter dois numeros')
+        .matches(/^\d{2}$/, 'Mês inválido')
         .required('O campo é obrigatório'),
+
       expirationYear: Yup.string()
-        .min(4, 'O campo precisa ter quatro numeros')
-        .max(4, 'O campo precisa ter quatro numeros')
+        .matches(/^\d{4}$/, 'Ano inválido')
         .required('O campo é obrigatório')
     }),
     onSubmit: (values) => {
@@ -106,6 +116,7 @@ const Cart = () => {
     }
   })
 
+
   const checkInputHasError = (fieldName: string) => {
     const isTouched = fieldName in form.touched
     const isInvalid = fieldName in form.errors
@@ -134,6 +145,22 @@ const Cart = () => {
     return alert(
       'Houve um erro com a sua compra. Recarregue a página e tente novamente'
     )
+  }
+
+  const handleLetterOnlyInput = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string
+  ) => {
+    const onlyLetters = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '')
+    form.setFieldValue(field, onlyLetters)
+  }
+
+  const handleNumberOnlyInput = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string
+  ) => {
+    const onlyNumbers = e.target.value.replace(/\D/g, '')
+    form.setFieldValue(field, onlyNumbers)
   }
 
   return (
@@ -185,13 +212,13 @@ const Cart = () => {
                   <Style.InputGroup>
                     <label htmlFor="receiver">Quem irá receber</label>
                     <input
-                      id="receiver"
-                      type="text"
-                      name="receiver"
-                      value={form.values.receiver}
-                      onChange={form.handleChange}
-                      onBlur={form.handleBlur}
-                      className={checkInputHasError('receiver') ? 'error' : ''}
+                    id="receiver"
+                    type="text"
+                    name="receiver"
+                    value={form.values.receiver}
+                    onChange={(e) => handleLetterOnlyInput(e, 'receiver')}
+                    onBlur={form.handleBlur}
+                    className={checkInputHasError('receiver') ? 'error' : ''}
                     />
                   </Style.InputGroup>
                   <Style.InputGroup>
@@ -241,7 +268,7 @@ const Cart = () => {
                         type="text"
                         name="number"
                         value={form.values.number}
-                        onChange={form.handleChange}
+                        onChange={(e) => handleNumberOnlyInput(e, 'number')}
                         onBlur={form.handleBlur}
                         className={checkInputHasError('number') ? 'error' : ''}
                       />
@@ -290,11 +317,9 @@ const Cart = () => {
                           type="text"
                           name="nameInCart"
                           value={form.values.nameInCart}
-                          onChange={form.handleChange}
+                          onChange={(e) => handleLetterOnlyInput(e, 'nameInCart')}
                           onBlur={form.handleBlur}
-                          className={
-                            checkInputHasError('nameInCart') ? 'error' : ''
-                          }
+                          className={checkInputHasError('nameInCart') ? 'error' : ''}
                         />
                       </Style.InputGroup>
                       <div className="d-flex">
